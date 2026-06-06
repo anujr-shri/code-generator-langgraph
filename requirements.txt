@@ -1,0 +1,32 @@
+# server
+uvicorn
+# LangChain Core
+langchain
+langchain-core
+# vector strorage
+chromadb
+
+# documnet processing
+beautifulsoup4
+
+# Backend
+fastapi
+
+# Frontend
+streamlit
+
+# Hugging Face Integration
+sentence-transformers
+langchain-huggingface
+transformers
+huggingface-hub
+langchain-text-splitters
+langchain-community
+langgraph
+# Environment Variable Management
+python-dotenv
+pydantic
+
+# Machine Learning Utilities
+numpy
+scikit-learn
