@@ -4,9 +4,12 @@ from langchain_huggingface import (
     HuggingFaceEndpoint, 
     ChatHuggingFace
 )
+from typing import Literal
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import AIMessage, HumanMessage
 from tools.preprocess_document import text_splitting
 from utils.logger import get_logger
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,6 +29,12 @@ with open("retriver_prompt.txt", "r") as file:
 with open("rewrite_query.txt", "r") as file:
     rewrite_prompt = file.read()
 
+# --- Answer Generation Format ---
+class CodeGeneration(BaseModel):
+    code: str = Field(description="Generated Code")
+    flag: bool = Field(description="Set this to true if answer cannot be found or reasonably inferred from the context")
+    
+
 # --- Prompts Template ---
 rewrite_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI agent whose task is to resolve the user query given previous conversation"),
@@ -36,6 +45,8 @@ answer_prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI agent"),
     ("human", answer_template)
 ])
+
+
 
 # --- Models Setup ---
 chat_endpoint = HuggingFaceEndpoint(
@@ -101,10 +112,10 @@ def rewrite_query(state):
 
     retriver_logger.info(f"Rewrite The new optimized query is {response.content}")
 
-    return {"optimize_query": response.content, "chat_history": [response.content]}
+    return {"optimize_query": response.content, "chat_history": [HumanMessage(response.content)]}
 
 def generate_answer(state):
-    chain = answer_prompt_template | chat_llm
+    chain = answer_prompt_template | chat_llm 
 
     semantic_serch_result = semantic_search(state["optimize_query"])
 
@@ -113,4 +124,7 @@ def generate_answer(state):
         "user_input": state["optimize_query"]
     })
     retriver_logger.info("Model Inference is Completed")
-    return {"response": response.content, "chat_history": [response.content]}
+    flag = False
+    if response.content == "I cannot find the answer for this query":
+        flag = True
+    return {"code": response.content, "flag": flag}
