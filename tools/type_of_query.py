@@ -1,26 +1,61 @@
-from langchain_groq import ChatGroq
-from langchain_core.output_parsers import PydanticOutputParser
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
-from pydantic import BaseModel, Field
-from typing import Literal
 from utils.logger import get_logger
 from dotenv import load_dotenv
+import os
 
 # Configuration
-CHAT_MODEL_ID = "llama-3.1-8b-instant"
+CHAT_MODEL_ID = "gemini-2.5-flash"
+TEMPERATURE = 0.3
+API_KEY = os.getenv("GOOGLE_API_KEY")
 logger_inst = get_logger(__name__)
 load_dotenv()
 
-# --- output schema ---
-class CheckResponseSchema(BaseModel):
-    response: str = Field("Response for user query")
-    general_query: Literal["genral_query", "code_query"]
-
 # --- model setup ---
-chat_llm = ChatGroq(
-    model=CHAT_MODEL_ID
+chat_llm = ChatGoogleGenerativeAI(
+    model=CHAT_MODEL_ID,
+    temperature=TEMPERATURE,
+    google_api_key=API_KEY
 )
 
 # --- prompt template ---
+with open("query_type.txt", "r") as file:
+    prompt = file.read()
 
+template = PromptTemplate(
+    template=prompt,
+    input_variables=["query", "chat_history"]
+)
 
+template_general = PromptTemplate(
+    template="You are AI agent answer the user query: {query} on the basis of past conversation: {chat_history} if needed and response with appropriate answer. Answer Sorry I can not help you if you can not answer the query",
+    input_variables=["query", "chat_history"]
+)
+
+# --- Core function ---
+def know_query_type(state):
+    chain = template | chat_llm
+    query = state["query"]
+    chat_history = state["chat_history"]
+
+    response = chain.invoke({
+        "query": query,
+        "chat_history": chat_history
+    })
+    logger_inst.info(f"Query type is determined it is {response.content}")
+
+    return {"query_type": response.content}
+
+def get_general_response(state):
+    chain = template_general | chat_llm
+
+    query = state["query"]
+    chat_history = state["chat_history"]
+
+    response = chain.invoke({
+        "query": query,
+        "chat_history": chat_history
+    })
+    logger_inst.info(f"Response for genral query is {response.content}")
+
+    return {"response": response.content}

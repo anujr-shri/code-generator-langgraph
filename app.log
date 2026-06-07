@@ -30,3 +30,4 @@
 2026-06-07 17:01:01 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : points((0, 0), (10, 10))
 2026-06-07 17:01:01 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
 2026-06-07 17:01:03 | INFO     | tools.code_explanation | Generated Explanation for the code
+2026-06-07 19:20:16 | INFO     | tools.type_of_query | Query type is determined it is general

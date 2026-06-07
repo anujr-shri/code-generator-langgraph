@@ -4,6 +4,7 @@ from typing import TypedDict, Annotated, Literal
 from langchain_core.messages import BaseMessage
 from tools.compilation_check import compilation_step, cannot_generate
 from tools.code_explanation import get_explanation
+from tools.type_of_query import know_query_type, get_general_response
 import operator
 
 # --- condtional function ---
@@ -18,6 +19,12 @@ def iterative_function(state):
     if state["exec"] == True:
         return "get_explanation"
     return "generate_answer"
+
+def general_response(state):
+    if state["query_type"] == "general":
+        return "get_general_response"
+    return "rewrite_query"
+
 
 # --- Maintain Persistance ---
 
@@ -37,6 +44,8 @@ class CodeGenerationSchema(TypedDict):
 
 # --- add Node in graph ---
 graph = StateGraph(CodeGenerationSchema)
+graph.add_node(know_query_type)
+graph.add_node(get_general_response)
 graph.add_node(rewrite_query)
 graph.add_node(generate_answer)
 graph.add_node(compilation_step)
@@ -45,7 +54,9 @@ graph.add_node(get_explanation)
 
 
 # --- add Edges ---
-graph.add_edge(START, "rewrite_query")
+graph.add_edge(START, "know_query_type")
+graph.add_conditional_edges("know_query_type", general_response)
+graph.add_edge("get_general_response", END)
 graph.add_edge("rewrite_query", "generate_answer")
 graph.add_conditional_edges("generate_answer", checker_function)
 graph.add_conditional_edges("compilation_step", iterative_function)
@@ -61,6 +72,8 @@ while True:
         "query": query,
         "count": 0
     })# type: ignore
-
-    print(final_state["code"])
-    print(final_state["explain"])
+    if final_state["query_type"] == "general":
+        print(final_state["response"])
+    else:
+        print(final_state["code"])
+        print(final_state["explain"])
