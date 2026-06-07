@@ -1,24 +1,22 @@
 from langchain_chroma import Chroma
-from langchain_huggingface import (
-    HuggingFaceEndpointEmbeddings, 
-    HuggingFaceEndpoint, 
-    ChatHuggingFace
-)
-from typing import Literal
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 from tools.preprocess_document import text_splitting
 from utils.logger import get_logger
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 # Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
-CHAT_MODEL_ID = "google/gemma-4-31B-it"
+CHAT_MODEL_ID = "gemini-2.5-flash"
+TEMPERATURE = 0.3
 BATCH_SIZE = 256
-MAX_NEW_TOKENS = 512
+API_KEY = os.getenv("GOOGLE_API_KEY")
 
 retriver_logger = get_logger(__name__)
 
@@ -49,13 +47,11 @@ answer_prompt_template = ChatPromptTemplate.from_messages([
 
 
 # --- Models Setup ---
-chat_endpoint = HuggingFaceEndpoint(
-    repo_id=CHAT_MODEL_ID,
-    task="text-generation",
-    max_new_tokens=MAX_NEW_TOKENS
-) # type: ignore
-
-chat_llm = ChatHuggingFace(llm=chat_endpoint)
+chat_llm = ChatGoogleGenerativeAI(
+    model=CHAT_MODEL_ID,
+    temperature=TEMPERATURE,
+    google_api_key=API_KEY
+)
 
 def create_embedding_model(model_name: str):
     return HuggingFaceEndpointEmbeddings(model=model_name)
@@ -116,15 +112,20 @@ def rewrite_query(state):
 
 def generate_answer(state):
     chain = answer_prompt_template | chat_llm 
+    previous_attempt = state["feedback"]
 
     semantic_serch_result = semantic_search(state["optimize_query"])
 
     response = chain.invoke({
         "pdf_knowledge": semantic_serch_result,
-        "user_input": state["optimize_query"]
+        "user_input": state["optimize_query"],
+        "feedback": previous_attempt
     })
+
     retriver_logger.info("Model Inference is Completed")
     flag = False
     if response.content == "I cannot find the answer for this query":
         flag = True
-    return {"code": response.content, "flag": flag}
+    
+    count = state["count"] + 1
+    return {"code": response.content, "flag": flag, "count": count, "chat_history": [AIMessage(content=response.content)]}

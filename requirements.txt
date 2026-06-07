@@ -1,8 +1,10 @@
 # server
 uvicorn
+
 # LangChain Core
 langchain
 langchain-core
+
 # vector strorage
 chromadb
 
@@ -23,6 +25,8 @@ huggingface-hub
 langchain-text-splitters
 langchain-community
 langgraph
+
+
 # Environment Variable Management
 python-dotenv
 pydantic

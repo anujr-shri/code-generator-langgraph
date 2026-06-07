@@ -1,9 +1,78 @@
-def compilation_step(state):
-    final_output = state["code"]
+import ast
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from utils.logger import get_logger
+from dotenv import load_dotenv
 
-    return {"response": final_output, "chat_history": [final_output]}
+# configuration
+load_dotenv()
+CHAT_MODEL_ID = "llama-3.1-8b-instant"
+logger_inst = get_logger(__name__)
+
+# --- prompt ---
+with open("test_call_prompt.txt", "r") as file:
+    test_call_txt = file.read()
+
+# --- Prompt template ---
+test_call_template = PromptTemplate(
+    template=test_call_txt,
+    input_variables=["code"]
+)
+
+# --- Chat Model ---
+chat_llm = ChatGroq(
+    model=CHAT_MODEL_ID
+)
+
+def generate_test_call(code: str):
+    chain = test_call_template | chat_llm
+
+    llm_response = chain.invoke({
+        "code": code
+    })
+    logger_inst.info(f"Generated Test Call required to run the code test call : {llm_response.content}")
+    return llm_response.content
+
+# --- Compilation Check ---
+
+def parse_code(code_str: str):
+    logger_inst.info(f"Parse the code sucessfully")
+    return code_str[10: len(code_str)-4]
+
+
+def compilation_step(state):
+    code = parse_code(state["code"])
+    test_call = generate_test_call(code)
+    final_code = code + "\n" + test_call # type: ignore
+    feedback = []
+    executable = False
+
+    try:
+        tree = ast.parse(final_code, mode='exec')
+        compile_code = compile(tree, filename="<string>", mode="exec")
+        namespace = {}
+        exec(compile_code, namespace)
+        executable = True
+        error_msg = "Code Excuted Sucessfully"
+
+    except SyntaxError as e:
+        error_msg = f"on line {e.lineno} there is error {e.msg}"
+
+    except NameError as e:
+        error_msg = f"[NameError]: {e}"
+
+    except TypeError as e:
+        error_msg = f"[TypeError]: {e}"
+
+    except Exception as e:
+        error_msg = f"[RuntimeError]: {e}"
+    
+    feedback.append(error_msg)
+    logger_inst.info(f"Excuted the code and output feedback is {feedback}")
+    return {"feedback": feedback, "exec": executable}
+
 
 def cannot_generate(state):
     return {
-        "response": "Sorry I can Not help you with this"
+        "code": "Sorry I can Not help you with query this tool can only generate the basic python code"
     }

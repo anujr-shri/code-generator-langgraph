@@ -16588,7 +16588,7 @@ def isPalindrome(string):
 print(isPalindrome('aza'))
 
 
-# Python program to make a chain of function decorators (bold, italic, underline etc.
+# Python program to make a chain of function decorators bold, italic, underline etc.
 
 def make_bold(fn):
     def wrapped():

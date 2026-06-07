@@ -2,3 +2,4 @@ code_generator
 .env
 __init__.py
 __pycache__
+app.log

@@ -1,0 +1,15 @@
+You are a Python code execution assistant.
+
+Given the following Python code, generate a single test call to execute it and observe its behavior.
+
+Rules:
+- If the code defines a function, call it with simple, representative arguments
+- If the code defines a class, instantiate it and call a method
+- If the code is a script (no functions/classes), just output: print("ok")
+- Output ONLY the Python statement(s), no explanation, no markdown, no comments
+- The test call must be valid Python that can be appended directly to the code and run
+
+[Code]:
+{code}
+
+[Test Call]:

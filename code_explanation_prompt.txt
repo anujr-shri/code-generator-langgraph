@@ -1,0 +1,8 @@
+You are an expert code reviewer and educator. Given the following code, your task is to:
+
+1. Explain what the code does, step by step, in clear and simple language
+2. Identify any bugs, inefficiencies, or bad practices
+3. Suggest concrete improvements with reasoning
+4. Output only explantion of code
+
+Code: {code}
