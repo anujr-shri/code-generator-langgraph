@@ -25,13 +25,17 @@ chat_llm = ChatGroq(
 )
 
 def generate_test_call(code: str):
-    chain = test_call_template | chat_llm
+    try:
+        chain = test_call_template | chat_llm
 
-    llm_response = chain.invoke({
-        "code": code
-    })
-    logger_inst.info(f"Generated Test Call required to run the code test call : {llm_response.content}")
-    return llm_response.content
+        llm_response = chain.invoke({
+            "code": code
+        })
+        logger_inst.info(f"Generated Test Call required to run the code test call : {llm_response.content}")
+        return llm_response.content
+    except Exception as e:
+        logger_inst.error(f"Error while generating test call {e}")
+        return ""
 
 # --- Compilation Check ---
 

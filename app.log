@@ -1,33 +1,35 @@
-2026-06-07 13:42:52 | INFO     | tools.retriver_tool | Rewrite The new optimized query is write a python function to print the root of the quadratic equation
-2026-06-07 13:42:53 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 13:43:11 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 13:43:11 | INFO     | tools.compilation_check | Parse the code sucessfully
-2026-06-07 13:43:12 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : print_roots(1, -3, 2)
-2026-06-07 13:43:12 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
-2026-06-07 13:44:31 | INFO     | tools.retriver_tool | Rewrite The new optimized query is Write a Python function to find the root of a quadratic equation
-2026-06-07 13:44:32 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 13:44:37 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 13:44:37 | INFO     | tools.compilation_check | Parse the code sucessfully
-2026-06-07 16:08:48 | INFO     | tools.retriver_tool | Rewrite The new optimized query is write a python function to check whether a number is a power of another number or not
-2026-06-07 16:08:49 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 16:08:54 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 16:08:54 | INFO     | tools.compilation_check | Parse the code sucessfully
-2026-06-07 16:08:55 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : isPower(16, 2)
-2026-06-07 16:08:55 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
-2026-06-07 16:13:39 | INFO     | tools.retriver_tool | Rewrite The new optimized query is write a function to generate human
-2026-06-07 16:15:04 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 16:15:09 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 16:55:26 | INFO     | tools.retriver_tool | Rewrite The new optimized query is write a python program to compute distance between two points
-2026-06-07 16:55:31 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 16:55:58 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 16:55:58 | INFO     | tools.compilation_check | Parse the code sucessfully
-2026-06-07 16:55:59 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : points((1, 2), (3, 4))
-2026-06-07 16:55:59 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
-2026-06-07 17:00:56 | INFO     | tools.retriver_tool | Rewrite The new optimized query is write a python program to compute distance between two points
-2026-06-07 17:00:58 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
-2026-06-07 17:01:00 | INFO     | tools.retriver_tool | Model Inference is Completed
-2026-06-07 17:01:00 | INFO     | tools.compilation_check | Parse the code sucessfully
-2026-06-07 17:01:01 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : points((0, 0), (10, 10))
-2026-06-07 17:01:01 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
-2026-06-07 17:01:03 | INFO     | tools.code_explanation | Generated Explanation for the code
-2026-06-07 19:20:16 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:48:17 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:48:20 | INFO     | tools.type_of_query | Response for genral query is Sorry I can not help you
+2026-06-08 12:49:55 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:49:57 | INFO     | tools.type_of_query | Response for genral query is Hi Anuj! It's nice to meet you.
+
+How can I help you today?
+2026-06-08 12:50:09 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:50:18 | INFO     | tools.type_of_query | Response for genral query is That's great! IIITs are excellent institutions. How can I help you today?
+2026-06-08 12:50:30 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:50:32 | INFO     | tools.type_of_query | Response for genral query is Your name is Anuj.
+2026-06-08 12:51:51 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-08 12:51:53 | INFO     | tools.type_of_query | Response for genral query is Hi Anuj! It's nice to meet you. How can I help you today?
+2026-06-08 12:52:44 | INFO     | tools.type_of_query | Query type is determined it is coding_related
+2026-06-08 12:53:20 | INFO     | tools.retriver_tool | Rewrite The new optimized query is Given the conversation history and the user's latest follow-up question, I will rewrite the question into a standalone, fully contextualized search query.
+
+Conversation history: ["Hi Anuj! It's nice to meet you. How can I help you today?"]
+Follow-up question: Write a python program for binary search
+
+Since there is no previous context or coreference, the rewritten question remains the same:
+
+Write a python program for binary search
+2026-06-08 12:53:25 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
+2026-06-08 12:54:01 | INFO     | tools.retriver_tool | Model Inference is Completed
+2026-06-08 12:54:01 | INFO     | tools.compilation_check | Parse the code sucessfully
+2026-06-08 12:54:02 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : binary_search(arr=[2, 3, 4, 10, 40], low=0, high=4, x=3)
+2026-06-08 12:54:02 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
+2026-06-08 12:54:05 | INFO     | tools.code_explanation | Generated Explanation for the code
+2026-06-08 13:17:13 | INFO     | tools.type_of_query | Query type is determined it is coding_related
+2026-06-08 13:17:50 | INFO     | tools.retriver_tool | Rewrite The new optimized query is python program to print sum of digits of a 4 digit number
+2026-06-08 13:17:52 | INFO     | tools.retriver_tool | Successfully extracted the knowledge from retriever
+2026-06-08 13:18:29 | INFO     | tools.retriver_tool | Model Inference is Completed
+2026-06-08 13:18:29 | INFO     | tools.compilation_check | Parse the code sucessfully
+2026-06-08 13:18:29 | INFO     | tools.compilation_check | Generated Test Call required to run the code test call : sumofdigits(1234)
+2026-06-08 13:18:29 | INFO     | tools.compilation_check | Excuted the code and output feedback is ['Code Excuted Sucessfully']
+2026-06-08 13:18:32 | INFO     | tools.code_explanation | Generated Explanation for the code

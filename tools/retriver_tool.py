@@ -1,8 +1,10 @@
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import HumanMessage
+from langchain_core.output_parsers import PydanticOutputParser
 from tools.preprocess_document import text_splitting
 from utils.logger import get_logger
 from pydantic import BaseModel, Field
@@ -14,11 +16,18 @@ load_dotenv()
 # Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 CHAT_MODEL_ID = "gemini-2.5-flash"
+FALLBACK_MODEL_ID = "llama-3.1-8b-instant"
 TEMPERATURE = 0.3
 BATCH_SIZE = 256
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
 retriver_logger = get_logger(__name__)
+
+# --- Rewriting Query Schema ---
+class RewritingSchema(BaseModel):
+    optimize_query: str = Field(description="Rewritten search query")
+
+parser = PydanticOutputParser(pydantic_object=RewritingSchema)
 
 # --- Prompts Setup ---
 with open("retriver_prompt.txt", "r") as file:
@@ -26,18 +35,17 @@ with open("retriver_prompt.txt", "r") as file:
 
 with open("rewrite_query.txt", "r") as file:
     rewrite_prompt = file.read()
-
-# --- Answer Generation Format ---
-class CodeGeneration(BaseModel):
-    code: str = Field(description="Generated Code")
-    flag: bool = Field(description="Set this to true if answer cannot be found or reasonably inferred from the context")
     
 
 # --- Prompts Template ---
 rewrite_template = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful AI agent whose task is to resolve the user query given previous conversation"),
+    ("system", "You are a helpful AI agent whose task is to resolve the user query given previous conversation \n [Output Format]: {format_instruction}"),
     ("human", rewrite_prompt) 
 ])
+
+new_rewrite_template = rewrite_template.partial(
+    format_instruction = parser.get_format_instructions()
+)
 
 answer_prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI agent"),
@@ -53,9 +61,14 @@ chat_llm = ChatGoogleGenerativeAI(
     google_api_key=API_KEY
 )
 
+feedback_model = ChatGroq(
+    model=FALLBACK_MODEL_ID
+)
+
+chat_model = chat_llm.with_fallbacks([feedback_model])
+
 def create_embedding_model(model_name: str):
     return HuggingFaceEndpointEmbeddings(model=model_name)
-
 
 embedding_model = create_embedding_model(EMBEDDING_MODEL_NAME)
 
@@ -99,33 +112,45 @@ def semantic_search(query: str, top_k: int = 3):
     return response
 
 def rewrite_query(state):
-    chain = rewrite_template | chat_llm
+    chain = new_rewrite_template | chat_model | parser
     
-    response = chain.invoke({
-        "chat_history": state["chat_history"],
-        "question": state["query"]  
-    })
+    try:
+        response = chain.invoke({
+            "chat_history": state["chat_history"],
+            "question": state["query"]  
+        })
+        retriver_logger.info(f"Rewrite The new optimized query is {response.optimize_query}")
+        return {"optimize_query": response.optimize_query, "chat_history": [HumanMessage(response.optimize_query)]}
+    
+    except Exception as e:
+        retriver_logger.error(f"Error while Rewriting query {e}")
+        return {"optimize_query": state["query"], "chat_history": state["chat_history"]}
 
-    retriver_logger.info(f"Rewrite The new optimized query is {response.content}")
-
-    return {"optimize_query": response.content, "chat_history": [HumanMessage(response.content)]}
+    
 
 def generate_answer(state):
-    chain = answer_prompt_template | chat_llm 
+    chain = answer_prompt_template | chat_model
     previous_attempt = state["feedback"]
 
     semantic_serch_result = semantic_search(state["optimize_query"])
-
-    response = chain.invoke({
-        "pdf_knowledge": semantic_serch_result,
-        "user_input": state["optimize_query"],
-        "feedback": previous_attempt
-    })
-
-    retriver_logger.info("Model Inference is Completed")
-    flag = False
-    if response.content == "I cannot find the answer for this query":
-        flag = True
+    try:
     
-    count = state["count"] + 1
-    return {"code": response.content, "flag": flag, "count": count, "chat_history": [AIMessage(content=response.content)]}
+        response = chain.invoke({
+            "pdf_knowledge": semantic_serch_result,
+            "user_input": state["optimize_query"],
+            "feedback": previous_attempt
+        })
+
+        retriver_logger.info("Model Inference is Completed")
+        flag = False
+        if response.content == "I cannot find the answer for this query":
+            flag = True
+        count = state["count"] + 1
+        return {"code": response.content, "flag": flag, "count": count}
+    
+    except Exception as e:
+        retriver_logger.error(f"Error while genrating code {e}")
+        return {"code": "", "flag": True, "count": state["count"] + 1}
+    
+    
+    

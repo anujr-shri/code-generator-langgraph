@@ -6,4 +6,4 @@ You are helpful AI agent whise task is to classify the user query on the basis o
 
 [INSTRUCTIONS]:
 1. Use History to classify the query if [history] is empty ignore it
-2. Output should be general or coding_related only
+2. Return ONLY one word: general or coding_related No explanation, no punctuation, no extra text.
