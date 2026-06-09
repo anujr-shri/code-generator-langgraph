@@ -1,5 +1,6 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
+from langchain_core.messages import AIMessage
 from dotenv import load_dotenv
 from utils.logger import get_logger
 import os
@@ -34,7 +35,7 @@ def get_explanation(state):
         })
         logger_inst.info(f"Generated Explanation for the code")
         combined = "\n".join([state["code"], str(response.content)])
-        return {"explain": response.content, "response": combined, "chat_history": [combined]}
+        return {"explain": response.content, "response": combined, "chat_history": [AIMessage(combined)]}
     
     except Exception as e:
         logger_inst.info(f"An Exception has occured while genrating an explnation messgae: {e}")

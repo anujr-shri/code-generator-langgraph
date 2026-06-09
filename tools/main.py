@@ -1,8 +1,10 @@
 from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
 from tools.retriver_tool import rewrite_query, generate_answer
 from typing import TypedDict, Annotated
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.runnables import RunnableConfig
 from tools.compilation_check import compilation_step, cannot_generate
 from tools.code_explanation import get_explanation
 from tools.type_of_query import know_query_type, get_general_response
@@ -29,11 +31,11 @@ def general_response(state):
 
 # --- Maintain Persistance ---
 checkpointer = InMemorySaver()
-config = {"configurable": {"thread_id": "thread-1"}}
+
 
 # --- Schema For state ---
 class CodeGenerationSchema(TypedDict):
-    chat_history: Annotated[list[BaseMessage], operator.add]
+    chat_history: Annotated[list[BaseMessage], add_messages]
     query: str
     optimize_query: str
     query_type: str
@@ -41,7 +43,7 @@ class CodeGenerationSchema(TypedDict):
     code: str
     explain: str
     flag: bool
-    feedback: Annotated[list[str], operator.add]
+    feedback: Annotated[list[str], add_messages]
     exec: bool
     count: int
 
@@ -70,16 +72,31 @@ graph.add_edge("cannot_generate", END)
 # --- Compilation ---
 workflow = graph.compile(checkpointer=checkpointer)
 
-while True:
-    query = input("Enter The Query: ")
-    try:
-        final_state = workflow.invoke({
-            "query": query,
-            "count": 0
-        }, config=config)# type: ignore
-        print(final_state["response"])
-        print(final_state)
-        
-    except Exception as e:
-        print(f"Exception has occured Probably Backend has hit RateLimitError for further Error \n Error : {e}")
+
+def response_generator(user_query, thread_id):
+    CONFIG = {"configurable": {"thread_id": thread_id}}
+    
+    chunks = workflow.invoke(
+        {
+            "query": user_query,
+            "count": 0,
+            "feedback": [],
+        }, # type: ignore
+        config=CONFIG, # type: ignore
+        stream_mode="values"
+    ) # type: ignore
+    
+    return chunks["response"]
+
+def get_all_messages(thread_id):
+    CONFIG: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+    history = workflow.get_state(CONFIG)
+    response_dict = []
+    for msg in history.values["chat_history"]:
+        if isinstance(msg, HumanMessage):
+            response_dict.append({"role": "user", "message": msg.content})
+        else:
+            response_dict.append({"role": "assistant", "message": msg.content})
+    
+    return response_dict
     

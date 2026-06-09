@@ -1,5 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import PromptTemplate
 from utils.logger import get_logger
 from dotenv import load_dotenv
@@ -51,11 +52,11 @@ def know_query_type(state):
             "chat_history": chat_history
         })
         logger_inst.info(f"Query type is determined it is {response.content}")
-        return {"query_type": response.content}
+        return {"query_type": response.content, "chat_history": [HumanMessage(query)]}
 
     except Exception as e:
         logger_inst.error(f"Error while knowing query type {e}")
-        return {"query_type": "general"}
+        return {"query_type": "general", "chat_history": [HumanMessage(query)]}
     
 
 def get_general_response(state):
@@ -70,10 +71,10 @@ def get_general_response(state):
         "chat_history": chat_history
         })
         logger_inst.info(f"Response for genral query is {response.content}")
-        return {"response": response.content, "chat_history": [response.content]}
+        return {"response": response.content, "chat_history": [AIMessage(response.content)]}
     
     except Exception as e:
         logger_inst.error(f"Error while genearting genral response {e}")
-        return {"response": "Sorry I can not help you"}
+        return {"response": "Sorry I can not help you", "chat_history": [AIMessage(response.content)]}
     
     

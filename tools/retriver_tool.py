@@ -1,6 +1,8 @@
+from transformers import logging
+logging.set_verbosity_error()
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage
@@ -9,6 +11,7 @@ from tools.preprocess_document import text_splitting
 from utils.logger import get_logger
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+import uuid
 import os
 
 load_dotenv()
@@ -52,8 +55,6 @@ answer_prompt_template = ChatPromptTemplate.from_messages([
     ("human", answer_template)
 ])
 
-
-
 # --- Models Setup ---
 chat_llm = ChatGoogleGenerativeAI(
     model=CHAT_MODEL_ID,
@@ -63,12 +64,12 @@ chat_llm = ChatGoogleGenerativeAI(
 
 feedback_model = ChatGroq(
     model=FALLBACK_MODEL_ID
-)
+)# type: ignore
 
 chat_model = chat_llm.with_fallbacks([feedback_model])
 
 def create_embedding_model(model_name: str):
-    return HuggingFaceEndpointEmbeddings(model=model_name)
+    return HuggingFaceEndpointEmbeddings(model=model_name, task="feature-extraction")
 
 embedding_model = create_embedding_model(EMBEDDING_MODEL_NAME)
 
@@ -80,7 +81,7 @@ retriver = Chroma(
 
 # --- Core Functions ---
 def store_document(docs_data, batch_size=BATCH_SIZE):
-    ids = [f"id{i}" for i in range(len(docs_data))]
+    ids = [str(uuid.uuid4()) for _ in range(len(docs_data))]
     batches = list(range(0, len(docs_data), batch_size))
 
     retriver_logger.info(f"Divided the {len(docs_data)} chunks into {len(batches)} batches")
@@ -120,11 +121,11 @@ def rewrite_query(state):
             "question": state["query"]  
         })
         retriver_logger.info(f"Rewrite The new optimized query is {response.optimize_query}")
-        return {"optimize_query": response.optimize_query, "chat_history": [HumanMessage(response.optimize_query)]}
+        return {"optimize_query": response.optimize_query}
     
     except Exception as e:
         retriver_logger.error(f"Error while Rewriting query {e}")
-        return {"optimize_query": state["query"], "chat_history": state["chat_history"]}
+        return {"optimize_query": state["query"]}
 
     
 
@@ -134,23 +135,23 @@ def generate_answer(state):
 
     semantic_serch_result = semantic_search(state["optimize_query"])
     try:
-    
         response = chain.invoke({
             "pdf_knowledge": semantic_serch_result,
             "user_input": state["optimize_query"],
             "feedback": previous_attempt
         })
 
-        retriver_logger.info("Model Inference is Completed")
         flag = False
         if response.content == "I cannot find the answer for this query":
             flag = True
         count = state["count"] + 1
+        retriver_logger.info("Model Inference is Completed")
         return {"code": response.content, "flag": flag, "count": count}
     
     except Exception as e:
         retriver_logger.error(f"Error while genrating code {e}")
         return {"code": "", "flag": True, "count": state["count"] + 1}
     
-    
-    
+
+
+load_data()

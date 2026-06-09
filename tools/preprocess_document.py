@@ -17,7 +17,7 @@ def load_txt_data():
     return document
 
 # --- text splitting ---
-def text_splitting(chunk_size=750, chunk_overlap=150):
+def text_splitting(chunk_size=300, chunk_overlap=60):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap
