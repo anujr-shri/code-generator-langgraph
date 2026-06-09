@@ -10,6 +10,7 @@ knowledge_path = os.path.join(base_dir, "knowledge_base", "english_python_data.t
 
 # --- text loading ---
 def load_txt_data():
+    """Loads text documents from the designated local knowledge path using UTF-8 encoding."""
     loader = TextLoader(knowledge_path, encoding="utf-8")
     document = loader.load()
     docs_logger.info(f"Sucessfully Loaded the data from {knowledge_path}")
@@ -18,6 +19,7 @@ def load_txt_data():
 
 # --- text splitting ---
 def text_splitting(chunk_size=300, chunk_overlap=60):
+    """Loads the text data and splits it into overlapping segments using a recursive character splitter."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap
@@ -29,5 +31,3 @@ def text_splitting(chunk_size=300, chunk_overlap=60):
     docs_logger.info(f"Sucessfully divide the data into chunks {len(split_docs_data)}")
 
     return split_docs_data
-
-

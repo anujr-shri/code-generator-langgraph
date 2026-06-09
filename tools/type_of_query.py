@@ -43,6 +43,7 @@ template_general = PromptTemplate(
 
 # --- Core function ---
 def know_query_type(state):
+    """Classifies the user's query type using an LLM chain based on the input and chat history."""
     chain = template | chat_model
     query = state["query"]
     chat_history = state["chat_history"]
@@ -60,6 +61,7 @@ def know_query_type(state):
     
 
 def get_general_response(state):
+    """Generates a conversational AI response for general queries using the chat history."""
     chain = template_general | chat_model
 
     query = state["query"]
@@ -76,5 +78,3 @@ def get_general_response(state):
     except Exception as e:
         logger_inst.error(f"Error while genearting genral response {e}")
         return {"response": "Sorry I can not help you", "chat_history": [AIMessage(response.content)]}
-    
-    

@@ -4,47 +4,41 @@ from langchain_core.prompts import PromptTemplate
 from utils.logger import get_logger
 from dotenv import load_dotenv
 
-# configuration
 load_dotenv()
 CHAT_MODEL_ID = "llama-3.1-8b-instant"
 logger_inst = get_logger(__name__)
 
-# --- prompt ---
 with open("test_call_prompt.txt", "r") as file:
     test_call_txt = file.read()
 
-# --- Prompt template ---
 test_call_template = PromptTemplate(
     template=test_call_txt,
     input_variables=["code"]
 )
 
-# --- Chat Model ---
 chat_llm = ChatGroq(
     model=CHAT_MODEL_ID
 )
 
 def generate_test_call(code: str):
+    """Generates a test call snippet for the given code using the LLM."""
     try:
         chain = test_call_template | chat_llm
-
-        llm_response = chain.invoke({
-            "code": code
-        })
+        llm_response = chain.invoke({"code": code})
         logger_inst.info(f"Generated Test Call required to run the code test call : {llm_response.content}")
         return llm_response.content
     except Exception as e:
         logger_inst.error(f"Error while generating test call {e}")
         return ""
 
-# --- Compilation Check ---
-
 def parse_code(code_str: str):
+    """Strips the markdown code fence from the generated code string."""
     logger_inst.info(f"Parse the code sucessfully")
     return code_str[10: len(code_str)-4]
 
 
 def compilation_step(state):
+    """Parses, compiles, and executes the generated code; returns feedback and execution status."""
     code = parse_code(state["code"])
     test_call = generate_test_call(code)
     final_code = code + "\n" + test_call # type: ignore
@@ -77,6 +71,7 @@ def compilation_step(state):
 
 
 def cannot_generate(state):
+    """Returns a fallback message when the query is outside the tool's scope."""
     return {
         "code": "Sorry I can Not help you with query this tool can only generate the basic python code"
     }

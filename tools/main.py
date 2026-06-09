@@ -12,11 +12,13 @@ import operator
 
 # --- utility function ---
 def checker_function(state):
+    """Routes to 'cannot_generate' if flag is True, else 'compilation_step'."""
     if state["flag"] == True:
         return "cannot_generate"
     return "compilation_step"
 
 def iterative_function(state):
+    """Routes to 'get_explanation' if count > 3 or exec succeeded, else loops back to 'generate_answer'."""
     if state["count"] > 3:
         return "get_explanation"
     if state["exec"] == True:
@@ -24,6 +26,7 @@ def iterative_function(state):
     return "generate_answer"
 
 def general_response(state):
+    """Routes to 'get_general_response' for general queries, else 'rewrite_query'."""
     if state["query_type"] == "general":
         return "get_general_response"
     return "rewrite_query"
@@ -74,6 +77,7 @@ workflow = graph.compile(checkpointer=checkpointer)
 
 
 def response_generator(user_query, thread_id):
+    """Invokes the workflow and returns the final response string."""
     CONFIG = {"configurable": {"thread_id": thread_id}}
     
     chunks = workflow.invoke(
@@ -89,6 +93,7 @@ def response_generator(user_query, thread_id):
     return chunks["response"]
 
 def get_all_messages(thread_id):
+    """Returns chat history for a thread as a list of role/message dicts."""
     CONFIG: RunnableConfig = {"configurable": {"thread_id": thread_id}}
     history = workflow.get_state(CONFIG)
     response_dict = []

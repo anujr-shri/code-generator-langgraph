@@ -62,13 +62,14 @@ chat_llm = ChatGoogleGenerativeAI(
     google_api_key=API_KEY
 )
 
-feedback_model = ChatGroq(
+fallback_model = ChatGroq(
     model=FALLBACK_MODEL_ID
 )# type: ignore
 
-chat_model = chat_llm.with_fallbacks([feedback_model])
+chat_model = chat_llm.with_fallbacks([fallback_model])
 
 def create_embedding_model(model_name: str):
+    """Initializes and returns a HuggingFace embedding model for feature extraction."""
     return HuggingFaceEndpointEmbeddings(model=model_name, task="feature-extraction")
 
 embedding_model = create_embedding_model(EMBEDDING_MODEL_NAME)
@@ -81,6 +82,7 @@ retriver = Chroma(
 
 # --- Core Functions ---
 def store_document(docs_data, batch_size=BATCH_SIZE):
+    """Batches and stores the preprocessed document chunks along with unique IDs into Chroma DB."""
     ids = [str(uuid.uuid4()) for _ in range(len(docs_data))]
     batches = list(range(0, len(docs_data), batch_size))
 
@@ -99,10 +101,12 @@ def store_document(docs_data, batch_size=BATCH_SIZE):
     retriver_logger.info(f"Successfully embedded and stored {len(docs_data)} document chunks.")
 
 def load_data():
+    """Triggers document text splitting and coordinates storing the chunks into the vector store."""
     split_data = text_splitting()
     store_document(split_data)
 
 def semantic_search(query: str, top_k: int = 3):
+    """Performs a similarity search in Chroma DB and joins the top matching page contents into a string."""
     result = retriver.similarity_search(
         query=query,
         k=top_k
@@ -113,6 +117,7 @@ def semantic_search(query: str, top_k: int = 3):
     return response
 
 def rewrite_query(state):
+    """Optimizes the user query using conversation history and returns a structured, parsed rewrite."""
     chain = new_rewrite_template | chat_model | parser
     
     try:
@@ -128,8 +133,8 @@ def rewrite_query(state):
         return {"optimize_query": state["query"]}
 
     
-
 def generate_answer(state):
+    """Generates code output using retrieved vector knowledge, the optimized query, and previous feedback."""
     chain = answer_prompt_template | chat_model
     previous_attempt = state["feedback"]
 
@@ -151,7 +156,3 @@ def generate_answer(state):
     except Exception as e:
         retriver_logger.error(f"Error while genrating code {e}")
         return {"code": "", "flag": True, "count": state["count"] + 1}
-    
-
-
-load_data()
