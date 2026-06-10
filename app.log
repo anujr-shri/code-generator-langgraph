@@ -73,3 +73,6 @@ print(f'Sum: {test_num1 + test_num2}')
 2026-06-10 12:36:25 | INFO     | frontend_utils | New Chat name is Greeting Ram
 2026-06-10 12:36:28 | INFO     | tools.type_of_query | Query type is determined it is general
 2026-06-10 12:36:29 | INFO     | tools.type_of_query | Response for genral query is Hi Ram, it's nice to meet you! How can I help you today?
+2026-06-10 15:42:29 | INFO     | frontend_utils | New Chat name is Capital of India
+2026-06-10 15:42:44 | INFO     | tools.type_of_query | Query type is determined it is general
+2026-06-10 15:42:45 | INFO     | tools.type_of_query | Response for genral query is The capital of India is New Delhi.

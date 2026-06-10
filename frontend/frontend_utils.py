@@ -1,5 +1,3 @@
-from transformers import logging
-logging.set_verbosity_error()
 from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_core.prompts import PromptTemplate
 from utils.logger import get_logger
