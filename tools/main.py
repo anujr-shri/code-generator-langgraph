@@ -8,6 +8,7 @@ from langchain_core.runnables import RunnableConfig
 from tools.compilation_check import compilation_step, cannot_generate
 from tools.code_explanation import get_explanation
 from tools.type_of_query import know_query_type, get_general_response
+from tools.coding_related import direct_llm
 
 
 # --- utility function ---
@@ -29,6 +30,8 @@ def general_response(state):
     """Routes to 'get_general_response' for general queries, else 'rewrite_query'."""
     if state["query_type"] == "general":
         return "get_general_response"
+    elif state["query_type"] in ("explain_code", "debug_code", "code_analysis"):
+        return "direct_llm"
     return "rewrite_query"
 
 
@@ -52,6 +55,7 @@ class CodeGenerationSchema(TypedDict):
 
 # --- add Node in graph ---
 graph = StateGraph(CodeGenerationSchema)
+graph.add_node(direct_llm)
 graph.add_node(know_query_type)
 graph.add_node(get_general_response)
 graph.add_node(rewrite_query)
@@ -64,6 +68,7 @@ graph.add_node(get_explanation)
 # --- add Edges ---
 graph.add_edge(START, "know_query_type")
 graph.add_conditional_edges("know_query_type", general_response)
+graph.add_edge("direct_llm", END)
 graph.add_edge("get_general_response", END)
 graph.add_edge("rewrite_query", "generate_answer")
 graph.add_conditional_edges("generate_answer", checker_function)
