@@ -19,7 +19,6 @@ sentence-transformers
 langchain-huggingface
 langchain-groq
 langchain-google-genai
-transformers
 huggingface-hub
 langchain-text-splitters
 langchain-community

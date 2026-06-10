@@ -1,11 +1,8 @@
-from transformers import logging
-logging.set_verbosity_error()
 from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import PydanticOutputParser
 from tools.preprocess_document import text_splitting
 from utils.logger import get_logger
