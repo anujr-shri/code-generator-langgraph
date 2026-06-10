@@ -15,6 +15,7 @@ fastapi
 streamlit
 
 # Hugging Face Integration
+langchain_chroma
 sentence-transformers
 langchain-huggingface
 langchain-groq

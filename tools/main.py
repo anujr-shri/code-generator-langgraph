@@ -8,7 +8,7 @@ from langchain_core.runnables import RunnableConfig
 from tools.compilation_check import compilation_step, cannot_generate
 from tools.code_explanation import get_explanation
 from tools.type_of_query import know_query_type, get_general_response
-import operator
+
 
 # --- utility function ---
 def checker_function(state):
