@@ -8,9 +8,6 @@ langchain-core
 # vector strorage
 chromadb
 
-# Backend
-fastapi
-
 # Frontend
 streamlit
 
