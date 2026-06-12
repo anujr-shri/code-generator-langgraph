@@ -6,6 +6,21 @@ from utils.logger import get_logger
 from dotenv import load_dotenv
 import os
 
+# General Prompt
+general_prompt = """You are an AI coding assistant. Answer the user's query using the conversation history below if it provides relevant context.
+
+Conversation history:
+{chat_history}
+
+User query:
+{query}
+
+Instructions:
+- Use the conversation history only if it helps clarify or build on the current query.
+- If you can answer, respond directly and concisely.
+- If the query is outside your capabilities or unclear even with context, respond with exactly: "Sorry, I can't help with that".
+"""
+
 # Configuration
 CHAT_MODEL_ID = "gemini-2.5-flash"
 FALLBACK_MODEL_ID = "llama-3.1-8b-instant"
@@ -37,7 +52,7 @@ template = PromptTemplate(
 )
 
 template_general = PromptTemplate(
-    template="You are AI agent answer the user query: {query} on the basis of past conversation: {chat_history} if needed and response with appropriate answer. Answer Sorry I can not help you if you can not answer the query",
+    template=general_prompt,
     input_variables=["query", "chat_history"]
 )
 
