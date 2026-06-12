@@ -73,5 +73,5 @@ def compilation_step(state):
 def cannot_generate(state):
     """Returns a fallback message when the query is outside the tool's scope."""
     return {
-        "code": "Sorry I can Not help you with query this tool can only generate the basic python code"
+        "response": "Sorry I can Not help you with query this tool can only generate the basic python code"
     }
