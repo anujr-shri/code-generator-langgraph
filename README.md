@@ -123,7 +123,7 @@ LANGCHAIN_PROJECT=code-generator-langgraph
 ### Running Locally
 
 ```bash
-streamlit run frontend/app.py
+streamlit run frontend/frontend_multichat.py
 ```
 
 The app will be available at `http://localhost:8501`.
@@ -175,6 +175,3 @@ CSE Student, IIIT Bhopal — ML Engineering enthusiast (LLM pipelines, RAG, agen
 
 ---
 
-## License
-
-This project is currently unlicensed. Add a `LICENSE` file if you intend to open-source it under a specific license (e.g., MIT).
