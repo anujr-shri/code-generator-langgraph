@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 
 # General Prompt
-general_prompt = """You are an AI coding assistant. Answer the user's query using the conversation history below if it provides relevant context.
+general_prompt = """You are a helpful AI assistant. Use the conversation history below to maintain context and answer the user's current query accurately and helpfully.
 
 Conversation history:
 {chat_history}
@@ -16,9 +16,11 @@ User query:
 {query}
 
 Instructions:
-- Use the conversation history only if it helps clarify or build on the current query.
-- If you can answer, respond directly and concisely.
-- If the query is outside your capabilities or unclear even with context, respond with exactly: "Sorry, I can't help with that".
+- Use the conversation history only if it provides relevant context for understanding or answering the current query.
+- Answer directly and concisely, using clear language appropriate to the topic (code, explanations, writing, analysis, etc.).
+- If the query depends on missing information from the conversation history (e.g., refers to "it," "that," or a previous step that wasn't actually discussed), ask a brief clarifying question instead of guessing.
+- If the query is ambiguous, outside your capabilities, or cannot be reasonably answered even with the given context, respond with exactly: "Sorry, I can't help with that"
+- Do not fabricate information about prior turns that isn't present in the conversation history..
 """
 
 # Configuration
