@@ -1,5 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+from langchain_groq import ChatGroq
 from langchain_core.messages import AIMessage
 from utils.logger import get_logger
 from dotenv import load_dotenv
@@ -11,6 +12,7 @@ with open("llm_query.txt", "r") as file:
 
 logger_inst = get_logger(__name__)
 model_id = "openai/gpt-oss-20b"
+FALLBACK_MODEL = "llama-3.1-8b-instant"
 
 # --- model Setup ---
 llm_endpoint = HuggingFaceEndpoint(
@@ -18,10 +20,16 @@ llm_endpoint = HuggingFaceEndpoint(
     task="text-generation"
 )# type: ignore
 
-chat_model = ChatHuggingFace(
+chat_llm = ChatHuggingFace(
     llm=llm_endpoint,
     temperature=0.2
 )
+
+fallback_model = ChatGroq(
+    model=FALLBACK_MODEL
+)
+
+chat_model = chat_llm.with_fallbacks([fallback_model])
 
 # --- template ---
 template = PromptTemplate(template=prompt, input_variables=["chat_history", "query_type", "query"])
