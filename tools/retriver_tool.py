@@ -1,5 +1,9 @@
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_huggingface import (
+    HuggingFaceEndpointEmbeddings, 
+    ChatHuggingFace, 
+    HuggingFaceEndpoint
+)
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
@@ -15,9 +19,9 @@ load_dotenv()
 # Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 CHAT_MODEL_ID = "llama-3.1-8b-instant"
+FALLBACK_MODEL_ID = "Qwen/Qwen3-Coder-Next"
 TEMPERATURE = 0.3
 BATCH_SIZE = 256
-API_KEY = os.getenv("GOOGLE_API_KEY")
 
 retriver_logger = get_logger(__name__)
 
@@ -55,6 +59,14 @@ answer_prompt_template = ChatPromptTemplate.from_messages([
 chat_llm = ChatGroq(
     model=CHAT_MODEL_ID
 )# type: ignore
+
+fallback_llm = HuggingFaceEndpoint(
+    repo_id=FALLBACK_MODEL_ID, 
+    task="text-generation",
+    max_new_tokens=512
+) # type: ignore
+
+fallback_model = ChatHuggingFace(llm=fallback_llm)
 
 chat_model = chat_llm.with_fallbacks([fallback_model])
 
