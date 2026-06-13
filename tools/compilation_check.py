@@ -1,11 +1,13 @@
 import ast
 from langchain_groq import ChatGroq
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_core.prompts import PromptTemplate
 from utils.logger import get_logger
 from dotenv import load_dotenv
 
 load_dotenv()
-CHAT_MODEL_ID = "llama-3.1-8b-instant"
+FALLBACK_MODEL_ID = "llama-3.1-8b-instant"
+CHAT_MODEL_ID = "Qwen/Qwen3-Coder-Next"
 logger_inst = get_logger(__name__)
 
 with open("test_call_prompt.txt", "r") as file:
@@ -16,9 +18,19 @@ test_call_template = PromptTemplate(
     input_variables=["code"]
 )
 
-chat_llm = ChatGroq(
-    model=CHAT_MODEL_ID
+fallback_model = ChatGroq(
+    model=FALLBACK_MODEL_ID
 )
+
+llm = HuggingFaceEndpoint(
+    repo_id=CHAT_MODEL_ID,
+    task="text-generation",
+    max_new_tokens=512
+)# type: ignore
+
+chat_model = ChatHuggingFace(llm=llm)
+
+chat_llm = chat_model.with_fallbacks([fallback_model])
 
 def generate_test_call(code: str):
     """Generates a test call snippet for the given code using the LLM."""
