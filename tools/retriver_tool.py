@@ -1,5 +1,4 @@
 from langchain_chroma import Chroma
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
@@ -15,8 +14,7 @@ load_dotenv()
 
 # Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
-CHAT_MODEL_ID = "gemini-2.5-flash"
-FALLBACK_MODEL_ID = "llama-3.1-8b-instant"
+CHAT_MODEL_ID = "llama-3.1-8b-instant"
 TEMPERATURE = 0.3
 BATCH_SIZE = 256
 API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -53,14 +51,9 @@ answer_prompt_template = ChatPromptTemplate.from_messages([
 ])
 
 # --- Models Setup ---
-chat_llm = ChatGoogleGenerativeAI(
-    model=CHAT_MODEL_ID,
-    temperature=TEMPERATURE,
-    google_api_key=API_KEY
-)
 
-fallback_model = ChatGroq(
-    model=FALLBACK_MODEL_ID
+chat_llm = ChatGroq(
+    model=CHAT_MODEL_ID
 )# type: ignore
 
 chat_model = chat_llm.with_fallbacks([fallback_model])
