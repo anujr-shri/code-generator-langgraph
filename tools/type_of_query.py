@@ -1,10 +1,10 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import PromptTemplate
 from utils.logger import get_logger
 from dotenv import load_dotenv
-import os
+
 
 # General Prompt
 general_prompt = """You are a helpful AI assistant. Use the conversation history below to maintain context and answer the user's current query accurately and helpfully.
@@ -24,23 +24,25 @@ Instructions:
 """
 
 # Configuration
-CHAT_MODEL_ID = "gemini-2.5-flash"
-FALLBACK_MODEL_ID = "llama-3.1-8b-instant"
+FALLBACK_MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
+CHAT_MODEL_ID = "llama-3.1-8b-instant"
 TEMPERATURE = 0.3
-API_KEY = os.getenv("GOOGLE_API_KEY")
 logger_inst = get_logger(__name__)
 load_dotenv()
 
 # --- model setup ---
-chat_llm = ChatGoogleGenerativeAI(
-    model=CHAT_MODEL_ID,
-    temperature=TEMPERATURE,
-    google_api_key=API_KEY
+
+chat_llm = ChatGroq(
+    model=CHAT_MODEL_ID
 )
 
-fallback_model = ChatGroq(
-    model=FALLBACK_MODEL_ID
-)
+fallback_endpoint = HuggingFaceEndpoint(
+    repo_id=FALLBACK_MODEL_ID,
+    task="text-generation",
+    max_new_tokens=512
+) # type: ignore
+
+fallback_model = ChatHuggingFace(llm=fallback_endpoint)
 
 chat_model = chat_llm.with_fallbacks([fallback_model])
 
