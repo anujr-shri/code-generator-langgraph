@@ -1,4 +1,5 @@
 # Code Generator — LangGraph Agentic Pipeline
+<img width="1890" height="835" alt="code-generator-langgraph" src="https://github.com/user-attachments/assets/8d6aea35-bda5-45e0-897d-62b20a7c6854" />
 
 An agentic, self-correcting code generation system built with **LangGraph**, combining query understanding, retrieval-augmented generation (RAG), code validation, and multi-provider LLM fallback into a single orchestrated workflow — with a Streamlit chat interface and full LangSmith tracing.
 
